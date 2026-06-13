@@ -1,0 +1,1698 @@
+/* ================================================================
+   STYLE.CSS — Portfolio Gabriel Assamoua
+   Développeur Web Junior — Abidjan, Côte d'Ivoire 🇨🇮
+   ----------------------------------------------------------------
+   PLAN DU FICHIER :
+   01. Variables CSS        — palette, typo, espacements, transitions
+   02. Reset & base         — normalisation cross-browser
+   03. Curseur personnalisé — point lumineux qui suit la souris
+   04. Navbar               — fixe, glassmorphism au scroll, drawer mobile
+   05. Hero                 — section plein écran, orbes, avatar
+   06. Animations globales  — reveal, fade-in, delays
+   07. Sections communes    — .section, .section-header, titres
+   08. À propos             — grille texte + cartes valeurs
+   09. Compétences          — barres de progression + pastilles outils
+   10. Projets              — cartes filtrables
+   11. Contact              — infos + formulaire validé
+   12. Footer               — bas de page épuré
+   13. Bouton scroll-top    — retour en haut
+   14. Media Queries        — responsive mobile 480 / 768 / 900px
+   ================================================================ */
+
+
+/* ================================================================
+   01. VARIABLES CSS
+   — Toutes les décisions de design sont centralisées ici.
+   — Pour changer le thème, on ne touche qu'à ces variables.
+   ================================================================ */
+:root {
+
+  /* ── Couleurs principales ── */
+  --bg-dark:    #0d0c0a;      /* Fond général : noir chaud (pas froid comme #000) */
+  --bg-card:    #161410;      /* Fond des cartes : légèrement plus clair */
+  --bg-section: #121110;      /* Fond des sections alternées */
+
+  --orange:     #f97316;      /* Accent principal — couleur CI + ODC */
+  --orange-dim: #c2560f;      /* Orange foncé pour états hover/active */
+  --gold:       #d4a017;      /* Or ivoirien — accents décoratifs */
+  --cream:      #f5efe0;      /* Crème clair — texte sur fond sombre */
+  --green:      #22c55e;      /* Vert succès (formulaire, barres) */
+  --red:        #ef4444;      /* Rouge erreur (validation) */
+
+  /* ── Texte ── */
+  --text-primary:   #f5efe0;          /* Corps de texte principal (clair) */
+  --text-secondary: #a8998a;          /* Sous-titres, descriptions */
+  --text-muted:     #6b5f52;          /* Placeholders, légendes discrètes */
+
+  /* ── Typographie ── */
+  --font-display: 'Playfair Display', Georgia, serif;  /* Titres majeurs */
+  --font-body:    'DM Sans', 'Segoe UI', sans-serif;   /* Corps de texte */
+
+  /* ── Bordures & effets ── */
+  --border:      rgba(245, 239, 224, 0.09);  /* Bordure subtile */
+  --border-hover:rgba(249, 115, 22,  0.30);  /* Bordure au hover */
+
+  /* Lueurs (box-shadow) pour les effets glow discrets */
+  --glow-orange: 0 0 40px rgba(249, 115, 22, 0.22);
+  --glow-gold:   0 0 30px rgba(212, 160, 23, 0.18);
+
+  /* ── Espacements ── */
+  --section-py: 7rem;     /* Padding vertical de chaque section */
+  --container:  1200px;   /* Largeur max du contenu centré */
+  --radius:     14px;     /* Arrondi cartes */
+  --radius-sm:  8px;      /* Arrondi boutons, inputs */
+  --radius-xs:  4px;      /* Arrondi pastilles, badges */
+
+  /* ── Transitions ── */
+  --transition: all 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --transition-fast: all 0.2s ease;
+}
+
+
+/* ================================================================
+   02. RESET & BASE
+   — On part d'une ardoise propre, cohérente sur tous les navigateurs.
+   ================================================================ */
+
+/* box-sizing border-box : padding et border INCLUS dans la largeur totale
+   Évite les débordements inattendus */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin:  0;
+  padding: 0;
+}
+
+/* Scroll fluide sur toute la page quand on clique sur une ancre */
+html {
+  scroll-behavior: smooth;
+  font-size: 16px;  /* 1rem = 16px — base pour toutes les unités rem */
+}
+
+body {
+  font-family: var(--font-body);
+  background-color: var(--bg-dark);
+  color: var(--text-primary);
+  line-height: 1.75;
+  overflow-x: hidden;   /* Empêche le scroll horizontal parasite */
+  cursor: none;         /* On cache le curseur natif → curseur custom JS */
+}
+
+/* Les images ne débordent jamais de leur conteneur */
+img {
+  max-width: 100%;
+  display: block;
+}
+
+/* Les liens n'ont pas de soulignement par défaut,
+   héritent de la couleur parente */
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+/* Pas de puces sur les listes */
+ul, ol { list-style: none; }
+
+/* Boutons héritent de la police du site */
+button { font-family: var(--font-body); }
+
+
+/* ================================================================
+   03. CURSEUR PERSONNALISÉ
+   — Un cercle orange plein (précis) + un cercle fantôme en retard.
+   — Masqués sur mobile (pas de souris, donc pas besoin).
+   ================================================================ */
+
+/* Cercle principal — suit la souris immédiatement */
+.cursor {
+  position: fixed;
+  width:  10px;
+  height: 10px;
+  background: var(--orange);
+  border-radius: 50%;
+  pointer-events: none;       /* Ne bloque pas les clics */
+  z-index: 9999;
+  transform: translate(-50%, -50%);
+  transition: width 0.2s, height 0.2s, background 0.2s;
+  will-change: left, top;     /* Optimisation GPU pour le mouvement */
+}
+
+/* Cercle fantôme — légèrement en retard pour l'effet "aura" */
+.cursor-trail {
+  position: fixed;
+  width:  34px;
+  height: 34px;
+  border: 1.5px solid var(--orange);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9998;
+  transform: translate(-50%, -50%);
+  /* Transition plus lente → crée le décalage visuel */
+  transition: left 0.12s ease-out, top 0.12s ease-out,
+              width 0.2s, height 0.2s, opacity 0.2s;
+  opacity: 0.45;
+  will-change: left, top;
+}
+
+/* Effet hover : le curseur s'agrandit quand on survole un lien/bouton
+   La classe .cursor-hover est ajoutée par JavaScript */
+.cursor.cursor-hover {
+  width:  18px;
+  height: 18px;
+  background: var(--gold);
+}
+.cursor-trail.cursor-hover {
+  width:  52px;
+  height: 52px;
+  opacity: 0.25;
+}
+
+
+/* ================================================================
+   04. BARRE DE NAVIGATION
+   ================================================================ */
+
+/* ── Conteneur principal ──────────────────────────────────────────
+   position: fixed → reste en haut même en scrollant
+   On commence transparent pour se fondre dans le hero
+   Le fond flouté arrive avec la classe .scrolled (ajoutée par JS) */
+.navbar {
+  position: fixed;
+  top:   0;
+  left:  0;
+  right: 0;
+  z-index: 1000;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 1.25rem 4%;
+  background: transparent;
+  transition: var(--transition);
+}
+
+/* ── État "scrollé" : glassmorphism au scroll ──────────────────
+   La classe .scrolled est ajoutée par JS quand scrollY > 60px */
+.navbar.scrolled {
+  background: rgba(13, 12, 10, 0.88);   /* Fond semi-transparent */
+  backdrop-filter: blur(20px);           /* Flou du fond (glassmorphism) */
+  -webkit-backdrop-filter: blur(20px);   /* Compatibilité Safari */
+  border-bottom: 0.5px solid var(--border);
+  padding: 0.85rem 4%;                   /* On réduit le padding au scroll */
+}
+
+/* ── Logo monogramme ───────────────────────────────────────────
+   Le point doré "." est ajouté en CSS via ::after
+   Aucun élément HTML supplémentaire nécessaire */
+.nav-logo {
+  text-decoration: none;
+  line-height: 1;
+}
+
+.logo-letters {
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  font-weight: 900;
+  color: var(--orange);
+  letter-spacing: 3px;
+  user-select: none;
+}
+
+/* Point doré décoratif — ne pas mettre dans le HTML */
+.logo-letters::after {
+  content: '.';
+  color: var(--gold);
+}
+
+
+/* ── Liens de navigation (desktop) ────────────────────────────
+   Sur desktop : flex-row horizontal
+   Sur mobile  : transformé en drawer latéral via @media */
+.nav-links {
+  display: flex;
+  gap: 2.5rem;
+  align-items: center;
+  margin: 0;
+  padding: 0;
+}
+
+/* Chaque lien de navigation */
+.nav-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;                  /* Espace entre icône et texte */
+
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+
+  position: relative;
+  padding: 4px 0;            /* Zone cliquable confortable */
+
+  /* On transite UNIQUEMENT sur la couleur — jamais la font-size */
+  transition: color 0.25s ease;
+}
+
+/* Icônes cachées sur desktop — visibles dans le drawer mobile */
+.nav-link i { display: none; }
+
+/* ── Soulignement animé sous le lien ──
+   Démarre à width: 0, s'étend à 100% au hover
+   Dégradé orange → or pour une touche ivoirienne */
+.nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: -3px;
+  left:    0;
+  width:   0;
+  height:  2px;
+  background: linear-gradient(90deg, var(--orange), var(--gold));
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+/* Hover : crème (pas de rouge, pas d'agrandissement de font) */
+.nav-link:hover { color: var(--cream); }
+.nav-link:hover::after { width: 100%; }
+
+/* ── Lien actif (section courante) ──
+   Géré par IntersectionObserver dans script.js */
+.nav-link.active         { color: var(--orange); }
+.nav-link.active::after  { width: 100%; }
+
+
+/* ── Bouton hamburger (mobile uniquement) ──────────────────────
+   display: none sur desktop → display: flex sur mobile (<768px) */
+.burger {
+  display: none;           /* Caché sur desktop */
+
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: var(--radius-xs);
+
+  z-index: 1010;           /* Au-dessus du drawer et de l'overlay */
+  transition: background 0.2s;
+}
+
+/* Fond orange discret au hover */
+.burger:hover {
+  background: rgba(249, 115, 22, 0.1);
+}
+
+/* Les 3 barres du hamburger */
+.burger span {
+  display: block;
+  width:  22px;
+  height: 2px;
+  background: var(--cream);
+  border-radius: 2px;
+  transform-origin: center;
+
+  /* Transition pour l'animation vers la croix */
+  transition: transform 0.3s ease, opacity 0.3s ease, background 0.25s;
+}
+
+/* ── Animation burger → croix (.open ajouté par JS) ──
+   1ère barre descend + tourne à +45°
+   2ème barre disparaît (opacity + scale)
+   3ème barre monte  + tourne à -45° */
+.burger.open span:nth-child(1) {
+  transform: translateY(7px) rotate(45deg);
+  background: var(--orange);
+}
+.burger.open span:nth-child(2) {
+  opacity:   0;
+  transform: scaleX(0);
+}
+.burger.open span:nth-child(3) {
+  transform: translateY(-7px) rotate(-45deg);
+  background: var(--orange);
+}
+
+
+/* ── Overlay sombre derrière le drawer mobile ──────────────────
+   Couvre toute la page, cliquable pour fermer le menu
+   N'existait PAS dans la version originale → ajouté ici */
+.nav-overlay {
+  position: fixed;
+  inset: 0;                              /* Couvre tout l'écran */
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 998;                          /* Sous le drawer (999) */
+
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+/* Visible + cliquable quand le menu est ouvert */
+.nav-overlay.open {
+  opacity: 1;
+  pointer-events: all;
+}
+
+
+/* ================================================================
+   05. HERO — Section d'accueil plein écran
+   ================================================================ */
+
+.hero {
+  min-height: 100vh;               /* Prend tout l'écran */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 3rem;
+  padding: 7rem 6% 4rem;           /* padding-top compense la navbar fixe */
+  position: relative;
+  overflow: hidden;
+}
+
+/* ── Orbes de fond (cercles lumineux animés) ──────────────────
+   filter: blur(100px) crée l'effet "glowing blob"
+   opacity faible pour ne pas dominer le texte */
+.hero-bg {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(100px);
+  opacity: 0.14;
+  animation: floatOrb 8s ease-in-out infinite;
+}
+
+/* Orbe 1 — grand, en haut à gauche */
+.orb-1 {
+  width: 500px; height: 500px;
+  background: var(--orange);
+  top: -100px; left: -100px;
+  animation-delay: 0s;
+}
+
+/* Orbe 2 — moyen, à droite au milieu */
+.orb-2 {
+  width: 350px; height: 350px;
+  background: var(--gold);
+  top: 50%; right: -80px;
+  animation-delay: 3s;
+}
+
+/* Orbe 3 — petit, en bas au centre */
+.orb-3 {
+  width: 280px; height: 280px;
+  background: var(--orange);
+  bottom: -60px; left: 40%;
+  animation-delay: 5s;
+}
+
+/* Animation de flottement des orbes */
+@keyframes floatOrb {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50%       { transform: translate(20px, -30px) scale(1.06); }
+}
+
+/* ── Contenu textuel côté gauche ──────────────────────────────
+   z-index: 1 pour passer devant les orbes de fond */
+.hero-content {
+  flex: 1;
+  max-width: 620px;
+  position: relative;
+  z-index: 1;
+}
+
+/* Étiquette "Disponible pour des projets" */
+.hero-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(249, 115, 22, 0.1);
+  border: 1px solid rgba(249, 115, 22, 0.28);
+  color: var(--orange);
+  font-size: 0.82rem;
+  font-weight: 500;
+  padding: 6px 14px;
+  border-radius: 50px;
+  margin-bottom: 1.5rem;
+}
+
+/* Petit point vert clignotant dans l'étiquette */
+.tag-dot {
+  width: 7px; height: 7px;
+  background: var(--green);
+  border-radius: 50%;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.4; transform: scale(0.75); }
+}
+
+/* Nom principal — la plus grande typographie de la page
+   clamp(min, val, max) → adaptatif selon la largeur d'écran */
+.hero-name {
+  font-family: var(--font-display);
+  font-size: clamp(3rem, 7vw, 5.5rem);
+  font-weight: 900;
+  line-height: 1.05;
+  margin-bottom: 1rem;
+  color: var(--cream);
+}
+
+/* "Assamoua" en orange + soulignement doré décoratif */
+.name-accent {
+  color: var(--orange);
+  position: relative;
+}
+
+.name-accent::after {
+  content: '';
+  position: absolute;
+  bottom: 4px; left: 0;
+  width: 100%;
+  height: 4px;
+  background: linear-gradient(90deg, var(--gold), transparent);
+  border-radius: 2px;
+}
+
+/* Zone du texte animé (typewriter) */
+.hero-title {
+  font-size: clamp(1rem, 2.5vw, 1.3rem);
+  color: var(--text-secondary);
+  margin-bottom: 1.5rem;
+  font-weight: 400;
+}
+
+/* Le mot qui s'écrit et s'efface en boucle */
+.typed-text {
+  color: var(--gold);
+  font-weight: 600;
+}
+
+/* Curseur clignotant après le texte animé */
+.typed-cursor {
+  color: var(--orange);
+  animation: blink 0.8s step-end infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+
+/* Description courte */
+.hero-desc {
+  color: var(--text-secondary);
+  font-size: 1rem;
+  max-width: 500px;
+  margin-bottom: 2.2rem;
+  line-height: 1.85;
+}
+
+/* Boutons CTA côte à côte */
+.hero-cta {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 2rem;
+}
+
+/* ── Boutons réutilisables ────────────────────────────────────
+   Utilisés partout dans le portfolio */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0.85rem 1.8rem;
+  border-radius: 50px;
+  font-family: var(--font-body);
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  border: 2px solid transparent;
+  letter-spacing: 0.03em;
+  text-decoration: none;
+}
+
+/* Bouton plein orange */
+.btn-primary {
+  background: var(--orange);
+  color: #fff;
+}
+.btn-primary:hover {
+  background: var(--orange-dim);
+  transform: translateY(-2px);
+  box-shadow: var(--glow-orange);
+}
+
+/* Bouton contour transparent */
+.btn-outline {
+  background: transparent;
+  border-color: rgba(245, 239, 224, 0.22);
+  color: var(--text-primary);
+}
+.btn-outline:hover {
+  border-color: var(--orange);
+  color: var(--orange);
+  transform: translateY(-2px);
+}
+
+/* Bouton plein largeur (formulaire) */
+.btn-full { width: 100%; justify-content: center; }
+
+/* ── Liens sociaux ────────────────────────────────────────────
+   Petits carrés avec icône — SVG ou Tabler */
+.hero-socials {
+  display: flex;
+  gap: 0.8rem;
+}
+
+.social-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px; height: 40px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xs);
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+  transition: var(--transition);
+}
+.social-link:hover {
+  border-color: var(--orange);
+  color: var(--orange);
+  transform: translateY(-3px);
+}
+
+/* ── Visuel / avatar côté droit ───────────────────────────────
+   Forme organique animée autour d'un cercle avec photo */
+.hero-visual {
+  flex-shrink: 0;
+  position: relative;
+  z-index: 1;
+}
+
+/* Cadre extérieur avec forme organique animée (morphShape) */
+.avatar-frame {
+  width:  300px;
+  height: 300px;
+  border-radius: 40% 60% 55% 45% / 45% 45% 55% 55%;
+  border: 2px solid rgba(249, 115, 22, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: morphShape 8s ease-in-out infinite;
+  position: relative;
+}
+
+/* Animation de morphing de la forme du cadre */
+@keyframes morphShape {
+  0%, 100% { border-radius: 40% 60% 55% 45% / 45% 45% 55% 55%; }
+  25%       { border-radius: 55% 45% 40% 60% / 60% 40% 55% 45%; }
+  50%       { border-radius: 60% 40% 50% 50% / 40% 60% 45% 55%; }
+  75%       { border-radius: 45% 55% 60% 40% / 55% 45% 40% 60%; }
+}
+
+/* Cercle intérieur avec photo */
+.avatar-inner {
+  width:  240px;
+  height: 240px;
+  background: linear-gradient(135deg, var(--bg-card), #1a1714);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  box-shadow: inset 0 0 60px rgba(249, 115, 22, 0.08), var(--glow-orange);
+}
+
+/* Photo de profil — cover pour remplir le cercle */
+.avatar-image {
+  width:  100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+/* Initiales "GA" — fallback si la photo ne charge pas */
+.avatar-initials {
+  font-family: var(--font-display);
+  font-size: 3.8rem;
+  font-weight: 900;
+  color: var(--orange);
+  letter-spacing: 4px;
+  opacity: 0.85;
+}
+
+/* ── Badges flottants autour de l'avatar ──
+   Petites étiquettes animées : code, CI, foi */
+.badge {
+  position: absolute;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xs);
+  padding: 6px 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--cream);
+  backdrop-filter: blur(10px);
+  animation: floatBadge 3s ease-in-out infinite;
+  white-space: nowrap;
+}
+
+.badge-code  { top: 10px;  right: -20px; animation-delay: 0s; }
+.badge-ci    { bottom: 20px; right: -30px; animation-delay: 1s; }
+
+/* badge-faith a une animation spécifique pour gérer le translateY de -50% */
+.badge-faith {
+  top: 50%; left: -45px;
+  animation: floatBadgeMid 3s ease-in-out infinite;
+  animation-delay: 2s;
+}
+
+@keyframes floatBadge {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-8px); }
+}
+
+/* Version pour le badge centré verticalement */
+@keyframes floatBadgeMid {
+  0%, 100% { transform: translateY(-50%); }
+  50%       { transform: translateY(calc(-50% - 8px)); }
+}
+
+
+/* ================================================================
+   06. ANIMATIONS GLOBALES
+   — Classes appliquées par JavaScript via IntersectionObserver
+   ================================================================ */
+
+/* ── Reveal au scroll ──────────────────────────────────────────
+   Éléments qui entrent en vue depuis le bas
+   JS ajoute .visible quand l'élément entre dans le viewport */
+.reveal {
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Délais pour animer plusieurs éléments en séquence */
+.reveal.delay-2 { transition-delay: 0.15s; }
+.reveal.delay-3 { transition-delay: 0.30s; }
+.reveal.delay-4 { transition-delay: 0.45s; }
+
+/* ── Fade-in au chargement (hero uniquement) ──────────────────
+   Joue automatiquement sans IntersectionObserver */
+.fade-in {
+  opacity: 0;
+  transform: translateY(22px);
+  animation: fadeInUp 0.7s forwards ease-out;
+}
+
+@keyframes fadeInUp {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Délais pour l'entrée séquentielle des éléments du hero */
+.delay-1 { animation-delay: 0.10s; }
+.delay-2 { animation-delay: 0.25s; }
+.delay-3 { animation-delay: 0.40s; }
+.delay-4 { animation-delay: 0.55s; }
+.delay-5 { animation-delay: 0.70s; }
+.delay-6 { animation-delay: 0.90s; }
+
+
+/* ================================================================
+   07. SECTIONS COMMUNES
+   ================================================================ */
+
+/* ── Conteneur de chaque section ──────────────────────────────
+   Centré, avec padding confortable */
+.section {
+  padding: var(--section-py) 6%;
+  max-width: var(--container);
+  margin: 0 auto;
+}
+
+/* ── Sections à fond alterné (pleine largeur) ──────────────────
+   Les sections .skills et .contact ont un fond légèrement différent
+   pour créer un rythme visuel entre les blocs */
+.skills,
+.contact {
+  background: var(--bg-section);
+  max-width: 100%;                /* Pleine largeur pour le fond */
+  padding-left:  6%;
+  padding-right: 6%;
+}
+
+/* Re-centrer le contenu à l'intérieur des sections pleine largeur */
+.skills > *,
+.contact > * {
+  max-width: var(--container);
+  margin-left:  auto;
+  margin-right: auto;
+}
+
+/* ── En-tête de section ───────────────────────────────────────
+   Eyebrow (label coloré) + titre + sous-titre */
+.section-header {
+  margin-bottom: 3.5rem;
+  text-align: center;
+}
+
+/* Eyebrow : petit label orange avec icône au-dessus du titre */
+.section-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--orange);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  margin-bottom: 0.75rem;
+  background: rgba(249, 115, 22, 0.08);
+  border: 1px solid rgba(249, 115, 22, 0.2);
+  padding: 5px 14px;
+  border-radius: 50px;
+}
+
+/* Titre principal de la section */
+.section-title {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 900;
+  color: var(--cream);
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+/* Sous-titre descriptif */
+.section-sub {
+  font-size: 1rem;
+  color: var(--text-secondary);
+  max-width: 500px;
+  margin: 0 auto;
+  line-height: 1.7;
+}
+
+
+/* ================================================================
+   08. SECTION À PROPOS
+   ================================================================ */
+
+/* Grille 2 colonnes : texte | cartes de valeurs */
+.about-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4rem;
+  align-items: start;
+}
+
+/* ── Texte de présentation ────────────────────────────────────
+   text-align: left (overrides le center de .section-header) */
+.about-text {
+  text-align: left;
+}
+
+.about-intro {
+  font-size: 1.05rem;
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+  line-height: 1.9;
+}
+
+.about-text p {
+  color: var(--text-secondary);
+  margin-bottom: 1rem;
+  line-height: 1.85;
+}
+
+/* ── Liste de faits rapides ──────────────────────────────────
+   Chaque <li> a une icône + texte */
+.about-facts {
+  margin-top: 1.8rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.about-facts li {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+}
+
+/* Wrapper de l'icône — fond orange discret, forme carrée arrondie */
+.fact-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px; height: 34px;
+  background: rgba(249, 115, 22, 0.1);
+  border: 1px solid rgba(249, 115, 22, 0.2);
+  border-radius: var(--radius-xs);
+  color: var(--orange);
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+/* ── Grille 2×2 de cartes valeurs ────────────────────────────
+   Chaque carte a une icône emoji + titre + description */
+.about-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+/* Carte individuelle */
+.value-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  transition: var(--transition);
+  text-align: left;
+}
+
+.value-card:hover {
+  border-color: var(--border-hover);
+  transform: translateY(-4px);
+  box-shadow: var(--glow-orange);
+}
+
+.value-icon {
+  font-size: 1.8rem;
+  display: block;
+  margin-bottom: 0.75rem;
+}
+
+.value-card h3 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--cream);
+  margin-bottom: 0.4rem;
+}
+
+.value-card p {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  line-height: 1.65;
+}
+
+
+/* ================================================================
+   09. SECTION COMPÉTENCES
+   ================================================================ */
+
+/* Grille 2 colonnes : barres | outils */
+.skills-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4rem;
+  align-items: start;
+  text-align: left;
+}
+
+/* Sous-titre de catégorie (Technologies / Outils) */
+.skills-sub {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--orange);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  margin-bottom: 1.5rem;
+}
+
+/* ── Barres de compétences ────────────────────────────────────
+   data-level sur le parent → JS lit la valeur et anime la barre */
+.skill-bar {
+  margin-bottom: 1.7rem;
+}
+
+/* Ligne label/pourcentage au-dessus de la barre */
+.skill-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.skill-name {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.9rem;
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+/* Icône Tabler dans le nom de compétence */
+.skill-name i {
+  color: var(--orange);
+  font-size: 1rem;
+}
+
+.skill-percent {
+  font-size: 0.82rem;
+  color: var(--orange);
+  font-weight: 600;
+}
+
+/* Piste de fond grise */
+.bar-track {
+  height: 6px;
+  background: rgba(245, 239, 224, 0.07);
+  border-radius: 50px;
+  overflow: hidden;
+}
+
+/* Remplissage orange — animé par JS via .animate
+   --target est une CSS custom property définie inline dans le HTML
+   width part de 0 et rejoint --target quand .animate est ajouté */
+.bar-fill {
+  height: 100%;
+  width:  0;
+  background: linear-gradient(90deg, var(--orange), var(--gold));
+  border-radius: 50px;
+  transition: width 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* JS ajoute .animate → la barre se remplit */
+.bar-fill.animate {
+  width: var(--target);
+}
+
+/* ── Pastilles d'outils ───────────────────────────────────────
+   Flex wrap — les pastilles s'enroulent naturellement */
+.tools-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+/* Pastille outil technologique (orange) */
+.tool-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(249, 115, 22, 0.07);
+  border: 1px solid rgba(249, 115, 22, 0.18);
+  color: var(--text-primary);
+  font-size: 0.82rem;
+  font-weight: 500;
+  padding: 5px 13px;
+  border-radius: 50px;
+  transition: var(--transition-fast);
+}
+.tool-pill:hover {
+  background: rgba(249, 115, 22, 0.16);
+  transform: translateY(-2px);
+}
+
+/* Pastille soft skill (or) */
+.tool-pill.soft {
+  background: rgba(212, 160, 23, 0.07);
+  border-color: rgba(212, 160, 23, 0.2);
+}
+.tool-pill.soft:hover {
+  background: rgba(212, 160, 23, 0.15);
+}
+
+/* Icônes Tabler dans les pastilles */
+.tool-pill i {
+  font-size: 0.9rem;
+  color: var(--orange);
+}
+
+
+/* ================================================================
+   10. SECTION PROJETS
+   ================================================================ */
+
+/* ── Barre de filtres ─────────────────────────────────────────
+   Boutons cliquables qui filtrent la grille par catégorie */
+.filter-bar {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-bottom: 2.5rem;
+  justify-content: center;
+}
+
+.filter-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  padding: 7px 18px;
+  border-radius: 50px;
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.filter-btn:hover,
+.filter-btn.active {
+  background: var(--orange);
+  border-color: var(--orange);
+  color: #fff;
+}
+
+/* ── Grille de cartes projets ─────────────────────────────────
+   auto-fill : autant de colonnes que possible
+   minmax(300px, 1fr) : minimum 300px, max : fraction de la grille */
+.projects-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+/* ── Carte projet individuelle ────────────────────────────────
+   Fond sombre + bordure subtile
+   hover : monte de 6px + lueur orange + bordure colorée */
+.project-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  transition: var(--transition);
+  position: relative;
+}
+.project-card:hover {
+  transform: translateY(-6px);
+  border-color: var(--border-hover);
+  box-shadow: var(--glow-orange);
+}
+
+/* Carte "bientôt" : semi-transparente et non-interactive */
+.project-card.coming-soon {
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+/* Bande colorée en haut de la carte
+   La couleur est définie via --accent en style inline dans le HTML */
+.card-accent {
+  height: 3px;
+  background: var(--accent, var(--orange));
+}
+
+/* Corps de la carte */
+.card-body { padding: 1.5rem; }
+
+/* En-tête : icône emoji + badge catégorie */
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.card-icon { font-size: 1.6rem; }
+
+/* Badge catégorie (petite pastille orange) */
+.card-badge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--orange);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  background: rgba(249, 115, 22, 0.1);
+  border: 1px solid rgba(249, 115, 22, 0.2);
+  padding: 3px 10px;
+  border-radius: 50px;
+}
+
+/* Titre de la carte */
+.card-title {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--cream);
+  margin-bottom: 0.6rem;
+}
+
+/* Description */
+.card-desc {
+  font-size: 0.87rem;
+  color: var(--text-secondary);
+  line-height: 1.7;
+  margin-bottom: 1.2rem;
+}
+
+/* Pastilles de technologies */
+.card-tags {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.2rem;
+}
+
+.tag {
+  font-size: 0.73rem;
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  padding: 2px 9px;
+  border-radius: 50px;
+}
+
+/* Liens "Voir le projet" et "GitHub" */
+.card-links {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.card-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--orange);
+  transition: color 0.2s;
+}
+.card-link:hover { color: var(--gold); }
+
+.card-link.secondary {
+  color: var(--text-muted);
+  font-weight: 400;
+}
+.card-link.secondary:hover { color: var(--text-secondary); }
+
+/* Animation de masquage pour le filtre JS */
+.project-card.hidden {
+  display: none;
+}
+
+
+/* ================================================================
+   11. SECTION CONTACT
+   ================================================================ */
+
+/* Grille 2 colonnes : infos | formulaire */
+.contact-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4rem;
+  align-items: start;
+  text-align: left;
+}
+
+/* Titre accrocheur côté gauche */
+.contact-headline {
+  font-family: var(--font-display);
+  font-size: clamp(1.6rem, 3vw, 2.2rem);
+  font-weight: 900;
+  color: var(--cream);
+  line-height: 1.25;
+  margin-bottom: 1rem;
+}
+
+/* "Parlons-en !" en orange */
+.accent-text { color: var(--orange); }
+
+.contact-sub {
+  color: var(--text-secondary);
+  margin-bottom: 2rem;
+  line-height: 1.8;
+  font-size: 0.95rem;
+}
+
+/* ── Liste des infos de contact ──────────────────────────────
+   Chaque .contact-item = icône + texte
+   Certains sont des liens <a> cliquables */
+.contact-details {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.contact-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  transition: var(--transition-fast);
+  text-decoration: none;
+  color: inherit;
+}
+.contact-item:hover {
+  border-color: var(--border-hover);
+  transform: translateX(4px);
+}
+
+/* Wrapper de l'icône — carré orange arrondi */
+.contact-icon-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px; height: 42px;
+  background: rgba(249, 115, 22, 0.1);
+  border-radius: var(--radius-xs);
+  color: var(--orange);
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+
+/* Label et valeur dans l'item */
+.contact-item small {
+  display: block;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+.contact-item span:last-child {
+  font-size: 0.9rem;
+  color: var(--text-primary);
+}
+
+/* ── Formulaire de contact ────────────────────────────────────
+   Fond card + padding + bordure subtile */
+.contact-form-wrap {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 2rem;
+}
+
+/* Groupe label + champ */
+.form-group {
+  margin-bottom: 1.4rem;
+}
+
+.form-group label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 0.5rem;
+  letter-spacing: 0.03em;
+}
+
+/* Style commun input + textarea */
+.form-group input,
+.form-group textarea {
+  width: 100%;
+  background: rgba(245, 239, 224, 0.04);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xs);
+  padding: 0.75rem 1rem;
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  line-height: 1.6;
+  transition: border-color 0.25s, box-shadow 0.25s;
+  outline: none;
+  resize: vertical;   /* Textarea redimensionnable verticalement seulement */
+}
+
+/* Focus : bordure orange + légère lueur */
+.form-group input:focus,
+.form-group textarea:focus {
+  border-color: rgba(249, 115, 22, 0.5);
+  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.08);
+}
+
+/* Placeholder discret */
+.form-group input::placeholder,
+.form-group textarea::placeholder {
+  color: var(--text-muted);
+}
+
+/* Bordure rouge sur champ invalide — ajoutée par JS */
+.form-group input.invalid,
+.form-group textarea.invalid {
+  border-color: var(--red);
+}
+
+/* Message d'erreur — rouge, sous le champ */
+.form-error {
+  display: block;
+  font-size: 0.78rem;
+  color: var(--red);
+  margin-top: 4px;
+  min-height: 16px;   /* Réserve la place pour éviter les sauts de layout */
+}
+
+/* Message de succès (masqué par défaut, JS le montre après envoi) */
+.form-success {
+  display: none;
+  align-items: center;
+  gap: 8px;
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  color: var(--green);
+  padding: 0.85rem 1rem;
+  border-radius: var(--radius-xs);
+  font-size: 0.88rem;
+  text-align: center;
+  justify-content: center;
+  margin-top: 1rem;
+}
+/* .form-success.visible → display: flex via JS */
+.form-success.visible {
+  display: flex;
+}
+
+
+/* ================================================================
+   12. FOOTER
+   ================================================================ */
+
+.footer {
+  border-top: 1px solid var(--border);
+  padding: 2.5rem 6%;
+}
+
+.footer-inner {
+  max-width: var(--container);
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+}
+
+/* Monogramme "GA." en Playfair Display */
+.footer-logo {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: var(--orange);
+  letter-spacing: 3px;
+}
+
+.footer-text {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  line-height: 1.7;
+}
+.footer-text small {
+  display: block;
+  font-size: 0.78rem;
+  margin-top: 2px;
+}
+
+/* Liens rapides en bas */
+.footer-links {
+  display: flex;
+  gap: 1.5rem;
+}
+.footer-links a {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  transition: color 0.2s;
+}
+.footer-links a:hover { color: var(--orange); }
+
+
+/* ================================================================
+   13. BOUTON SCROLL TO TOP
+   ================================================================ */
+
+.scroll-top {
+  position: fixed;
+  bottom: 2rem;
+  right:  2rem;
+  width:  44px; height: 44px;
+  background: var(--orange);
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  font-size: 1.1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  /* Masqué et non-cliquable par défaut */
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(10px);
+
+  transition: var(--transition);
+  z-index: 500;
+}
+
+/* Visible quand JS ajoute .visible (après ~300px de scroll) */
+.scroll-top.visible {
+  opacity: 1;
+  pointer-events: all;
+  transform: translateY(0);
+}
+.scroll-top:hover {
+  background: var(--orange-dim);
+  transform: translateY(-3px);
+}
+
+
+/* ================================================================
+   14. MEDIA QUERIES — RESPONSIVE MOBILE
+   ================================================================ */
+
+/* ── Tablette : 900px ──────────────────────────────────────────
+   Les grilles 2 colonnes passent en 1 colonne */
+@media (max-width: 900px) {
+
+  /* Grilles 2col → 1col */
+  .about-grid,
+  .skills-grid,
+  .contact-grid {
+    grid-template-columns: 1fr;
+    gap: 2.5rem;
+  }
+
+  /* Hero passe en colonne (texte au-dessus, avatar en dessous) */
+  .hero {
+    flex-direction: column;
+    text-align: center;
+    padding-top: 8rem;
+    gap: 2.5rem;
+  }
+
+  /* Aligne les éléments flex au centre dans le hero */
+  .hero-cta,
+  .hero-socials,
+  .hero-tag,
+  .hero-desc {
+    justify-content: center;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  /* Réduit l'avatar sur tablette */
+  .avatar-frame { width: 230px; height: 230px; }
+  .avatar-inner { width: 180px; height: 180px; }
+  .avatar-initials { font-size: 3rem; }
+
+  /* Centres les textes dans les sections */
+  .about-text,
+  .skills-grid,
+  .contact-grid {
+    text-align: center;
+  }
+  .about-facts li { justify-content: center; }
+  .about-cards { justify-items: center; }
+}
+
+
+/* ── Mobile : 768px ───────────────────────────────────────────
+   Navigation burger + drawer mobile */
+@media (max-width: 768px) {
+
+  /* Affiche le bouton burger */
+  .burger { display: flex; }
+
+  /* Cache le curseur custom — inutile sur mobile (tactile) */
+  .cursor,
+  .cursor-trail { display: none; }
+  body { cursor: auto; }
+
+  /* ── Drawer mobile ──────────────────────────────────────────
+     right: -100% = caché hors écran par défaut
+     right: 0     = visible quand .open est ajouté par JS */
+  .nav-links {
+    position: fixed;
+    top:   0;
+    right: -100%;         /* Caché */
+    width: 78%;
+    max-width: 300px;
+    height: 100vh;
+
+    background: rgba(13, 12, 10, 0.98);
+    backdrop-filter: blur(30px);
+    -webkit-backdrop-filter: blur(30px);
+    border-left: 0.5px solid rgba(249, 115, 22, 0.2);
+
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 0;
+
+    padding: 2rem 1.8rem;
+
+    z-index: 999;
+
+    /* Glissement fluide depuis la droite */
+    transition: right 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+
+  /* Drawer ouvert */
+  .nav-links.open { right: 0; }
+
+  /* Icônes Tabler visibles dans le drawer */
+  .nav-link i { display: block; }
+
+  /* Liens dans le drawer : plus grands, avec séparateur */
+  .nav-link {
+    font-size: 0.9rem;
+    letter-spacing: 0.1em;
+    padding: 0.75rem 0;
+    width: 100%;
+    border-bottom: 0.5px solid rgba(245, 239, 224, 0.06);
+    gap: 10px;
+    color: var(--text-secondary);
+  }
+  .nav-link:last-child { border-bottom: none; }
+
+  /* Icônes dans le drawer en orange */
+  .nav-link i {
+    color: var(--orange);
+    font-size: 16px;
+    width: 20px;
+    flex-shrink: 0;
+  }
+
+  /* Soulignement désactivé en vertical — on utilise la couleur */
+  .nav-link::after { display: none; }
+
+  .nav-link:hover {
+    color: var(--cream);
+    padding-left: 4px;
+  }
+  .nav-link.active { color: var(--orange); }
+
+  /* ── Logo dans le drawer ──
+     On ajoute le logo en haut du drawer via un pseudo-element sur nav-links */
+  .nav-links::before {
+    content: 'GABRIEL.';
+    font-family: var(--font-display);
+    font-size: 1.15rem;
+    font-weight: 900;
+    color: var(--orange);
+    letter-spacing: 3px;
+    margin-bottom: 2rem;
+    display: block;
+  }
+
+  /* Projets en 1 colonne */
+  .projects-grid { grid-template-columns: 1fr; }
+
+  /* Cartes valeurs en 1 colonne */
+  .about-cards { grid-template-columns: 1fr; }
+
+  /* Footer en colonne */
+  .footer-inner {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .section { padding: 5rem 5%; }
+
+  /* Contact form full width */
+  .contact-form-wrap { padding: 1.5rem; }
+}
+
+
+/* ── Petit mobile : 480px ─────────────────────────────────────
+   Ajustements pour les très petits écrans */
+@media (max-width: 480px) {
+
+  .hero-name { font-size: 2.4rem; }
+
+  /* CTA en colonne sur petit mobile */
+  .hero-cta { flex-direction: column; }
+  .btn      { width: 100%; justify-content: center; }
+
+  /* Avatar plus petit */
+  .avatar-frame { width: 200px; height: 200px; }
+  .avatar-inner { width: 155px; height: 155px; }
+
+  /* Filtres projets en grille 2 colonnes */
+  .filter-bar { justify-content: flex-start; }
+
+  /* Sections encore plus compactes */
+  .section { padding: 4rem 4%; }
+}
+
+
+/* ================================================================
+   ACCESSIBILITÉ
+   — Focus visible pour la navigation au clavier
+   ================================================================ */
+
+/* Anneau de focus visible sur tous les éléments interactifs */
+:focus-visible {
+  outline: 2px solid var(--orange);
+  outline-offset: 3px;
+  border-radius: var(--radius-xs);
+}
+
+/* Masque le focus quand on utilise la souris (pas le clavier) */
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Respect du mode "prefers-reduced-motion" — réduit les animations
+   pour les utilisateurs qui ont activé ce paramètre dans leur OS */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration:   0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  html { scroll-behavior: auto; }
+}
+.section-divider {
+  width: 100%;
+  height: 1px;
+  background: var(--border);
+  margin: 3rem 0;
+}
